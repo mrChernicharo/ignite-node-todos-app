@@ -37,7 +37,7 @@ app.post("/users", (request, response) => {
   };
 
   if (users.some((user) => user.username === newUser.username)) {
-    return response.status(405).json({
+    return response.status(400).json({
       error: `Esse Username já está sendo utilizado. Escolha outro por favor`,
     });
   }
@@ -55,7 +55,8 @@ app.get("/todos", checksExistsUserAccount, (request, response) => {
   // Complete aqui
   const { user } = request;
 
-  return response.json({ usert: user.username, todos: user.todos });
+  // return response.json({ user: user.username, todos: user.todos });
+  return response.json(user.todos);
 });
 
 app.post("/todos", checksExistsUserAccount, (request, response) => {
@@ -65,12 +66,12 @@ app.post("/todos", checksExistsUserAccount, (request, response) => {
 
   console.log(deadline);
 
-  if (new Date(deadline).getTime() <= new Date().getTime()) {
-    return response.json({
-      error:
-        "a data da deadline precisa ser maior que a data de criação do TODO",
-    });
-  }
+  // if (new Date(deadline).getTime() <= new Date().getTime()) {
+  //   return response.json({
+  //     error:
+  //       "a data da deadline precisa ser maior que a data de criação do TODO",
+  //   });
+  // }
 
   const newTodo = {
     id: uuid(),
@@ -82,11 +83,14 @@ app.post("/todos", checksExistsUserAccount, (request, response) => {
 
   user.todos.push(newTodo);
 
-  return response.json({
-    message: "TODO criado com sucesso!",
-    user: user.username,
-    ...newTodo,
-  });
+  // delete newTodo.id;
+  // return response.json({
+  //   message: "TODO criado com sucesso!",
+  //   user: user.username,
+  //   ...newTodo,
+  // });
+
+  return response.status(201).json(newTodo);
 });
 
 app.put("/todos/:id", checksExistsUserAccount, (request, response) => {
@@ -95,12 +99,12 @@ app.put("/todos/:id", checksExistsUserAccount, (request, response) => {
   const { title, deadline } = request.body;
   const { id } = request.params;
 
-  if (new Date(deadline).getTime() <= new Date().getTime()) {
-    return response.json({
-      error:
-        "a data da deadline precisa ser maior que a data de criação do TODO",
-    });
-  }
+  // if (new Date(deadline).getTime() <= new Date().getTime()) {
+  //   return response.json({
+  //     error:
+  //       "a data da deadline precisa ser maior que a data de criação do TODO",
+  //   });
+  // }
 
   const todo = user.todos.find((todo) => todo.id === id);
 
@@ -111,7 +115,9 @@ app.put("/todos/:id", checksExistsUserAccount, (request, response) => {
   todo.title = title;
   todo.deadline = new Date(deadline);
 
-  return response.json({ message: "TODO atualizado com sucesso!", todo });
+  // return response.json({ message: "TODO atualizado com sucesso!", todo });
+
+  return response.json(todo);
 });
 
 app.patch("/todos/:id/done", checksExistsUserAccount, (request, response) => {
@@ -122,33 +128,42 @@ app.patch("/todos/:id/done", checksExistsUserAccount, (request, response) => {
   const todo = user.todos.find((todo) => todo.id === id);
 
   if (!todo) {
-    return response.json({ error: "todo não encontrado" });
+    return response.status(404).json({ error: "todo não encontrado" });
   }
 
-  todo.done = !todo.done;
+  // todo.done = !todo.done;
+  todo.done = true;
 
-  return response.json({ message: "TODO atualizado com sucesso!", todo });
+  delete todo.error;
+
+  return response.json(todo);
 });
 
 app.delete("/todos/:id", checksExistsUserAccount, (request, response) => {
   // Complete aqui
   const { user } = request;
   const { id } = request.params;
-  console.log(id);
+  // console.log(id);
 
-  const index = user.todos.findIndex((todo) => todo.id === id);
+  // const index = user.todos.findIndex((todo) => todo.id === id);
 
-  if (index < 0) {
-    return response.json({ error: "TODO não encontrado" });
+  // if (index < 0) {
+  //   return response.status(404).json({ error: "TODO não encontrado" });
+  // }
+
+  // const deletedTodo = user.todos[index];
+  const todo = user.todos.find((todo) => todo.id === id);
+  if (!todo) {
+    return response.status(404).json({ error: "TODO não encontrado" });
   }
+  user.todos.splice(todo, 1);
 
-  const deletedTodo = user.todos[index];
+  return response.status(204).send();
 
-  user.todos.splice(index, 1);
-
-  return response.json({
-    message: `TODO ${deletedTodo.id} excluído com sucesso!`,
-  });
+  // return response.status(204).json({ error: "TODO deletado" });
+  // return response.status(204).json({
+  // message: `TODO ${deletedTodo.id} excluído com sucesso!`,
+  // });
 });
 
 module.exports = app;
