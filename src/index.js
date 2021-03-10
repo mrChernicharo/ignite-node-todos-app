@@ -132,6 +132,23 @@ app.patch("/todos/:id/done", checksExistsUserAccount, (request, response) => {
 
 app.delete("/todos/:id", checksExistsUserAccount, (request, response) => {
   // Complete aqui
+  const { user } = request;
+  const { id } = request.params;
+  console.log(id);
+
+  const index = user.todos.findIndex((todo) => todo.id === id);
+
+  if (index < 0) {
+    return response.json({ error: "TODO não encontrado" });
+  }
+
+  const deletedTodo = user.todos[index];
+
+  user.todos.splice(index, 1);
+
+  return response.json({
+    message: `TODO ${deletedTodo.id} excluído com sucesso!`,
+  });
 });
 
 module.exports = app;
