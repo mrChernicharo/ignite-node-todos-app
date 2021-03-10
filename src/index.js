@@ -104,6 +104,10 @@ app.put("/todos/:id", checksExistsUserAccount, (request, response) => {
 
   const todo = user.todos.find((todo) => todo.id === id);
 
+  if (!todo) {
+    return response.status(404).json({ error: "todo não encontrado" });
+  }
+
   todo.title = title;
   todo.deadline = new Date(deadline);
 
@@ -112,6 +116,18 @@ app.put("/todos/:id", checksExistsUserAccount, (request, response) => {
 
 app.patch("/todos/:id/done", checksExistsUserAccount, (request, response) => {
   // Complete aqui
+  const { user } = request;
+  const { id } = request.params;
+
+  const todo = user.todos.find((todo) => todo.id === id);
+
+  if (!todo) {
+    return response.json({ error: "todo não encontrado" });
+  }
+
+  todo.done = !todo.done;
+
+  return response.json({ message: "TODO atualizado com sucesso!", todo });
 });
 
 app.delete("/todos/:id", checksExistsUserAccount, (request, response) => {
