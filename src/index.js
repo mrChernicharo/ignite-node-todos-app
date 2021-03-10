@@ -55,11 +55,38 @@ app.get("/todos", checksExistsUserAccount, (request, response) => {
   // Complete aqui
   const { user } = request;
 
-  return response.json({ username: user.username, todos: user.todos });
+  return response.json({ usert: user.username, todos: user.todos });
 });
 
 app.post("/todos", checksExistsUserAccount, (request, response) => {
   // Complete aqui
+  const { user } = request;
+  const { title, deadline } = request.body;
+
+  console.log(deadline);
+
+  if (new Date(deadline).getTime() <= new Date().getTime()) {
+    return response.json({
+      error:
+        "a data da deadline precisa ser maior que a data de criação do TODO",
+    });
+  }
+
+  const newTodo = {
+    id: uuid(),
+    title,
+    done: false,
+    deadline: new Date(deadline),
+    created_at: new Date(),
+  };
+
+  user.todos.push(newTodo);
+
+  return response.json({
+    message: "TODO criado com sucesso!",
+    user: user.username,
+    ...newTodo,
+  });
 });
 
 app.put("/todos/:id", checksExistsUserAccount, (request, response) => {
